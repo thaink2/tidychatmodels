@@ -14,13 +14,13 @@
 #' chat_openai <- create_chat('openai', Sys.getenv('OAI_DEV_KEY'))
 #' chat_mistral <- create_chat('mistral', Sys.getenv('MISTRAL_DEV_KEY'))
 #' }
-create_chat <- function(vendor, api_key = '', port = if (vendor == 'ollama') 11434 else NULL, api_version = '') {
+create_chat <- function(vendor, api_key = '', port = if (vendor == 'ollama') 11434 else NULL, api_version = '', endpoint = NULL) {
   if (vendor != 'openai' & vendor != 'mistral' & vendor != 'ollama' & vendor != 'anthropic') stop('Unsupported vendor')
 
   if (vendor == 'openai') {
     # https://platform.openai.com/docs/api-reference/making-requests
     engine <- httr2::request(
-      base_url ='https://api.openai.com/v1/chat/completions'
+      base_url = ifelse(is.null(endpoint),'https://api.openai.com/v1/chat/completions',endpoint)
     ) |>
       httr2::req_headers(
         'Authorization' = paste('Bearer', api_key),
@@ -31,7 +31,7 @@ create_chat <- function(vendor, api_key = '', port = if (vendor == 'ollama') 114
   if (vendor == 'mistral') {
     # https://docs.mistral.ai/
     engine <- httr2::request(
-      base_url ='https://api.mistral.ai/v1/chat/completions'
+      base_url =  ifelse(is.null(endpoint),'https://api.mistral.ai/v1/chat/completions',endpoint)
     ) |>
       httr2::req_headers(
         'Authorization' = paste('Bearer', api_key),
@@ -54,7 +54,7 @@ create_chat <- function(vendor, api_key = '', port = if (vendor == 'ollama') 114
     if (api_version == '') stop('Anthropic requires API version')
 
     engine <- httr2::request(
-      base_url ='https://api.anthropic.com/v1/messages'
+      base_url = ifelse(is.null(endpoint),'https://api.anthropic.com/v1/messages',endpoint)
     ) |>
       httr2::req_headers(
         'x-api-key' = api_key,
